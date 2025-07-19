@@ -7,6 +7,36 @@ A simple machine learning project to predict future sales totals based on produc
 * Visualization of prediction performance
 * Easy setup & deployment-ready code
 
+## 🔮 Test API https://replit.com/
+`https://3c96b8b2-4475-48a0-941c-69ab9e588cff-00-1m3398d51iq58.pike.replit.dev:5000`
+
+### ✅ Batch Input Example
+```bash
+curl -X POST https://3c96b8b2-4475-48a0-941c-69ab9e588cff-00-1m3398d51iq58.pike.replit.dev:5000/api/v1/predict  -H "Content-Type: application/json"  -d '[
+       {"product": "Laptop", "customer": "John", "quantity": 2, "price": 800},
+       {"product": "Tablet", "customer": "Alice", "quantity": 3, "price": 400},
+       {"product": "Phone", "customer": "Mark", "quantity": 0, "price": 900}
+     ]'
+```
+**Response**:
+```json
+[
+  {
+    "index": 0,
+    "predicted_total": 1520.0
+  },
+  {
+    "index": 1,
+    "predicted_total": 1205.0
+  },
+  {
+    "index": 2,
+    "error": "Quantity must be a positive number."
+  }
+]
+```
+✅ Valid records will also be appended to data/new_sales.csv for future retraining purposes.
+
 ---
 
 ## 🗂️ Project Structure
@@ -87,7 +117,7 @@ python -m tests.test_random_forest_model
 
 ---
 
-## 🔮 Running the Flask API
+## 🔮 Running the Flask API Local
 
 ```bash
 python -m api.app
@@ -95,21 +125,8 @@ python -m api.app
 
 The API will start at: `http://127.0.0.1:5000/`
 
-### ✅ Example cURL Request
 
-```bash
-curl -X POST http://127.0.0.1:5000/api/v1/predict -H "Content-Type: application/json" -d "{\"product\": \"Laptop\", \"customer\": \"John\", \"quantity\": 2, \"price\": 800}"
-```
-
-**Response**:
-
-```json
-{
-  "predicted_total": 1520.0
-}
-```
-
-✅ Single Input Example
+### ✅ Single Input Example
 ```bash
 curl -X POST http://127.0.0.1:5000/api/v1/predict -H "Content-Type: application/json"  -d '{"product": "Laptop", "customer": "John", "quantity": 2, "price": 800}'
 ```
