@@ -1,6 +1,6 @@
 # 📊 Predict Sales AI Model
 
-A simple machine learning project to predict future sales totals based on product, customer, quantity, and price using a Random Forest Regressor. This project includes:
+A simple machine learning project to predict future sales totals based on product, customer, quantity, and price using a Random Forest Regressor and Linear Regression. This project includes:
 
 * Data preprocessing & model training
 * Flask API for real-time predictions
@@ -108,6 +108,48 @@ curl -X POST http://127.0.0.1:5000/api/v1/predict -H "Content-Type: application/
   "predicted_total": 1520.0
 }
 ```
+
+✅ Single Input Example
+```bash
+curl -X POST http://127.0.0.1:5000/api/v1/predict -H "Content-Type: application/json"  -d '{"product": "Laptop", "customer": "John", "quantity": 2, "price": 800}'
+```
+
+**Response**:
+```json
+[
+  {
+    "index": 0,
+    "predicted_total": 1520.0
+  }
+]
+```
+
+### ✅ Batch Input Example
+```bash
+curl -X POST http://127.0.0.1:5000/api/v1/predict  -H "Content-Type: application/json"  -d '[
+       {"product": "Laptop", "customer": "John", "quantity": 2, "price": 800},
+       {"product": "Tablet", "customer": "Alice", "quantity": 3, "price": 400},
+       {"product": "Phone", "customer": "Mark", "quantity": 0, "price": 900}
+     ]'
+```
+**Response**:
+```json
+[
+  {
+    "index": 0,
+    "predicted_total": 1520.0
+  },
+  {
+    "index": 1,
+    "predicted_total": 1205.0
+  },
+  {
+    "index": 2,
+    "error": "Quantity must be a positive number."
+  }
+]
+```
+✅ Valid records will also be appended to data/new_sales.csv for future retraining purposes.
 
 ---
 
