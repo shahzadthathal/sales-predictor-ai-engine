@@ -7,8 +7,13 @@ A simple machine learning project to predict future sales totals based on produc
 * Visualization of prediction performance
 * Easy setup & deployment-ready code
 
-## 🔮 Test API https://replit.com/
+## 🔮 Test API 
+
 `https://3c96b8b2-4475-48a0-941c-69ab9e588cff-00-1m3398d51iq58.pike.replit.dev:5000`
+
+OR
+
+`https://sales-predictor-ai-engine-production.up.railway.app/api/v1/predict`
 
 ### ✅ Batch Input Example
 ```bash
