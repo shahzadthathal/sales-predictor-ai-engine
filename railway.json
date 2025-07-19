@@ -2,5 +2,5 @@
   "build": {
     "builder": "NIXPACKS"
   },
-  "start": "python -m model.random_forest.train_and_save && python -m api.app"
+  "start": "python -m api.app"
 }
