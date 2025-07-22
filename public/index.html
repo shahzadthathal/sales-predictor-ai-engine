@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sales Predictor Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    h1 { color: #333; }
+    table { border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+    #loading { color: green; font-weight: bold; }
+    #chart-container { width: 100%; max-width: 800px; margin-top: 30px; }
+    #downloadBtn { margin-top: 10px; padding: 8px 12px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+    #downloadBtn:hover { background: #45a049; }
+  </style>
+</head>
+<body>
+
+<h1>🧠 Sales Predictor AI Demo</h1>
+
+<p>Select a CSV or Excel file (.csv / .xlsx) with columns: <strong>product, customer, quantity, price</strong></p>
+
+<input type="file" id="fileInput" accept=".csv, .xlsx" />
+<p id="loading"></p>
+
+<button id="downloadBtn" style="display:none;">⬇️ Download Results as CSV</button>
+
+<table id="resultTable" style="display:none;">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Product</th>
+      <th>Customer</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Predicted Total</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="chart-container">
+  <canvas id="predictionChart"></canvas>
+</div>
+
+<script>
+const apiUrl = '/api/v1/predict';
+let finalResults = [];
+
+document.getElementById('fileInput').addEventListener('change', handleFile);
+document.getElementById('downloadBtn').addEventListener('click', downloadCSV);
+
+let chartInstance = null;
+
+function handleFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  const ext = file.name.split('.').pop().toLowerCase();
+  document.getElementById('loading').textContent = "Processing file...";
+  document.getElementById('resultTable').style.display = "none";
+  document.getElementById('downloadBtn').style.display = "none";
+
+  reader.onload = async (e) => {
+    let rows = [];
+
+    if (ext === 'csv') {
+      const parsed = Papa.parse(e.target.result, { header: true });
+      rows = parsed.data;
+    } else if (ext === 'xlsx') {
+      const workbook = XLSX.read(e.target.result, { type: 'binary' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(sheet);
+    } else {
+      alert("Unsupported file type.");
+      return;
+    }
+
+    // Sanitize and validate
+    rows = rows.map((r, i) => ({
+      index: i,
+      product: r.product?.toString().trim(),
+      customer: r.customer?.toString().trim(),
+      quantity: Number(r.quantity),
+      price: Number(r.price)
+    })).filter(r =>
+      r.product && r.customer &&
+      !isNaN(r.quantity) && r.quantity > 0 &&
+      !isNaN(r.price) && r.price > 0
+    );
+
+    if (rows.length === 0) {
+      alert("No valid records found. Make sure quantity and price are positive numbers.");
+      document.getElementById('loading').textContent = "";
+      return;
+    }
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(rows)
+      });
+
+      const results = await response.json();
+      finalResults = results.map(res => {
+        const row = rows.find(r => r.index === res.index);
+        return {
+          product: row.product,
+          customer: row.customer,
+          quantity: row.quantity,
+          price: row.price,
+          predicted_total: res.predicted_total ?? res.error
+        };
+      });
+
+      // Update table
+      const tableBody = document.querySelector("#resultTable tbody");
+      tableBody.innerHTML = '';
+      finalResults.forEach((r, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${r.product}</td>
+          <td>${r.customer}</td>
+          <td>${r.quantity}</td>
+          <td>${r.price}</td>
+          <td>${r.predicted_total}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      document.getElementById('resultTable').style.display = 'table';
+      document.getElementById('loading').textContent = "";
+      document.getElementById('downloadBtn').style.display = "inline-block";
+
+      drawChart(finalResults);
+
+    } catch (err) {
+      alert("Error sending data to server.");
+      console.error(err);
+      document.getElementById('loading').textContent = "";
+    }
+  };
+
+  if (ext === 'csv') {
+    reader.readAsText(file);
+  } else {
+    reader.readAsBinaryString(file);
+  }
+}
+
+function downloadCSV() {
+  if (!finalResults.length) return;
+
+  const csv = Papa.unparse(finalResults);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "predicted_results.csv";
+  a.click();
+}
+
+function drawChart(data) {
+  const labels = data.map((r, i) => `#${i + 1} ${r.product}`);
+  const values = data.map(r => typeof r.predicted_total === 'number' ? r.predicted_total : 0);
+
+  const ctx = document.getElementById('predictionChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy(); // destroy old chart if any
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Predicted Total',
+        data: values,
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      },
+      plugins: {
+        legend: {
+          display: true
+        },
+        title: {
+          display: true,
+          text: 'Live Prediction Chart'
+        }
+      }
+    }
+  });
+}
+</script>
+
+</body>
+</html>

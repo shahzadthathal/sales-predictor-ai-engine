@@ -7,6 +7,69 @@ A simple machine learning project to predict future sales totals based on produc
 * Visualization of prediction performance
 * Easy setup & deployment-ready code
 
+
+---
+
+## 📦 Features
+
+- Upload `.csv` or `.xlsx` Excel files containing sales data
+- Instantly get **predicted totals** using a trained machine learning model
+- View results in a **clean HTML table**
+- **Download results** as a CSV file
+- View a **live bar chart** of predictions at the bottom of the page
+
+---
+
+## 📁 Required File Format
+
+Your file must have the following columns:
+
+- `product`
+- `customer`
+- `quantity`
+- `price`
+
+Example:
+
+| product | customer | quantity | price |
+|---------|----------|----------|-------|
+| pen     | Alice    | 10       | 2     |
+| book    | Bob      | 5        | 8     |
+
+---
+
+## 🚀 Live Demo
+
+🔗 [Click to Open App](https://3c96b8b2-4475-48a0-941c-69ab9e588cff-00-1m3398d51iq58.pike.replit.dev:5000)
+
+---
+
+## 📤 Uploading & Downloading
+
+1. Select a `.csv` or `.xlsx` file from your system.
+2. The model will automatically predict totals for each row.
+3. The results will be shown in a table.
+4. Click **“Download Results as CSV”** to save predictions.
+5. View a **bar chart** of predicted totals at the bottom of the page.
+
+---
+
+## 📊 Live Chart Example
+
+The chart shows the predicted sales total for each row visually using a bar graph.
+
+---
+
+## 🛠️ Tech Stack
+
+- Backend: Python, Flask
+- Machine Learning: scikit-learn, pandas
+- Frontend: HTML, JavaScript (PapaParse, XLSX.js, Chart.js)
+- Deployment: Replit
+
+---
+
+
 ## 🔮 Test API 
 
 `https://3c96b8b2-4475-48a0-941c-69ab9e588cff-00-1m3398d51iq58.pike.replit.dev:5000`
